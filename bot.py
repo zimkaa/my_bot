@@ -132,10 +132,10 @@ def calculator(string):
     try:
         if len(string.split("+")) == 2:
             parts = string.split("+")
-            result = []
-            for part in parts:
-                result.append(float(part)) 
-            return sum(result)
+            # result = []
+            # for part in parts:
+            #     result.append(float(part)) 
+            return sum(map(float, parts))
 
         if len(string.split('-')) == 2:
             parts = string.split("-")
