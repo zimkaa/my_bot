@@ -34,11 +34,13 @@ PROXY = {
     }
 }
 
-list_sity = []
-with open("cities.txt", 'r', encoding="utf-8") as cities:
-    for city in cities:
-        list_sity.append(city.replace('\n', ''))
-
+user_list_sity = {}
+def read_txt():
+    list_sity = []
+    with open("cities.txt", 'r', encoding="utf-8") as cities:
+        for city in cities:
+            list_sity.append(city.replace('\n', ''))
+    return list_sity
 
 def greet_user(update, context):
     text = 'Вызван /start'
@@ -91,52 +93,71 @@ def next_full_moon(update, context):
         text = f"Что-то не то ввел. Вводи дату в формате гггг-мм-дд пример: \"2019-01-01\""
         update.message.reply_text(text)
 
-# осталось доработать многопользовательский режим
+
 def cities_game(update, context):
     user_text = update.message.text.split()[-1]
-    # print(update.message.username)
     user_city = user_text.capitalize()
-    last_letter = user_city[-1]
-    if user_city in list_sity:
-        list_sity.remove(user_city)
-        length = len(list_sity)
+    user_chat = update.message.chat_id
+    text = engine_game(user_city, user_chat)
+    update.message.reply_text(text)
+
+
+def engine_game(city, chat_id):
+    last_letter = city[-1]
+    if user_list_sity.get(chat_id) is None:
+        user_list_sity[chat_id] = read_txt()
+        cities = user_list_sity.get(chat_id)
+    else:
+        cities = user_list_sity.get(chat_id)
+    if city in cities:
+        cities.remove(city)
+        user_list_sity[chat_id] = cities
+        length = len(cities)
         count = 0
-        for index in list_sity:
+        for index in cities:
             if last_letter == index[0].lower():
-                update.message.reply_text(f"{index}, ваш ход.")
-                list_sity.remove(index)
-                break
+                cities.remove(index)
+                user_list_sity[chat_id] = cities
+                return f"{index}, ваш ход."
             else:
                 count += 1
         if count >= length:
-            update.message.reply_text(f"Я больше не знаю городов на букву {last_letter}. Ты победил!")
+            return f"Я больше не знаю городов на букву {last_letter}. Ты победил!"
     else:            
-        update.message.reply_text(f"Такой город уже был. Ты проиграл.")
+        return f"Такой город уже был. Ты проиграл."
 
 
-def calculation(value1, value2, operation):
-    string = str(value1 + operation + value2)
-    return string
+def calculator(string):
+    string = string.replace(" ", "")
+    try:
+        if len(string.split("+")) == 2:
+            parts = string.split("+")
+            result = []
+            for part in parts:
+                result.append(float(part)) 
+            return sum(result)
+
+        if len(string.split('-')) == 2:
+            parts = string.split("-")
+            return float(parts[0]) - float(parts[-1])
+
+        if len(string.split('*')) == 2:
+            parts = string.split("*")
+            return float(parts[0]) * float(parts[1])
+
+        if len(string.split('/')) == 2:
+            parts = string.split("/")
+            return float(parts[0]) / float(parts[1])
+    except ValueError:
+        return "Вводи пожалуйста числа!"
+    except ZeroDivisionError:
+        return "На 0 делить нельзя!"
 
 def calc(update, context):
     user_text = update.message.text
-    expression = user_text.replace("/calc ", '')
-    minus = '-'
-    values = expression.split(minus)
-    if len(expression.split(minus)) == 2:
-        val1 = float(values[0])
-        val2 = float(values[-1])
-        text = val1 - val2
-        update.message.reply_text(text)
-        print(calculation(val1, val2, minus))
-    elif len(expression.split('+')) == 2:
-        pass
-    elif len(expression.split('*')) == 2:
-        pass
-    elif len(expression.split('/')) == 2:
-        pass
-    else:
-        update.message.reply_text(f"Что-то пошло не так")
+    expression = str(user_text.replace("/calc ", ''))
+    text = calculator(expression)
+    update.message.reply_text(text)
 
 
 def main():
