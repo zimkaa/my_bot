@@ -1,22 +1,7 @@
-"""
-Домашнее задание №1
-
-Использование библиотек: ephem
-
-* Установите модуль ephem
-* Добавьте в бота команду /planet, которая будет принимать на вход
-  название планеты на английском, например /planet Mars
-* В функции-обработчике команды из update.message.text получите
-  название планеты (подсказка: используйте .split())
-* При помощи условного оператора if и ephem.constellation научите
-  бота отвечать, в каком созвездии сегодня находится планета.
-
-"""
 import logging
 import ephem
 import settings
 from datetime import datetime
-# from city import list_sity
 
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 
@@ -60,7 +45,6 @@ def mars(update, context):
 
 def talk_to_me(update, context):
     user_text = update.message.text
-    # print(user_text)
     update.message.reply_text(user_text)
 
 
@@ -68,10 +52,9 @@ def wordcount(update, context):
     try:
         user_text = update.message.text.split()
         count_word = len(user_text) - 1
-        # тут считаются всё и придлоги тоже относятся к словам
-        # так же нужно вводить пробел после команды /wordcount
+        # тут считаются всё и предлоги тоже относятся к словам
         if count_word == 0:
-            text = f"нечего считать"
+            text = f"Нечего считать"
             update.message.reply_text(text)
         else:
             text = f"{count_word} слов(а)"
@@ -132,9 +115,6 @@ def calculator(string):
     try:
         if len(string.split("+")) == 2:
             parts = string.split("+")
-            # result = []
-            # for part in parts:
-            #     result.append(float(part)) 
             return sum(map(float, parts))
 
         if len(string.split('-')) == 2:
