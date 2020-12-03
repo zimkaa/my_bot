@@ -87,55 +87,122 @@ def cities_game(update, context):
 
 def engine_game(city, chat_id):
     last_letter = city[-1]
+
     if user_list_sity.get(chat_id) is None:
         user_list_sity[chat_id] = read_txt()
         cities = user_list_sity.get(chat_id)
+
     else:
         cities = user_list_sity.get(chat_id)
+
     if city in cities:
+
         cities.remove(city)
         user_list_sity[chat_id] = cities
         length = len(cities)
         count = 0
+
         for index in cities:
+
             if last_letter == index[0].lower():
                 cities.remove(index)
                 user_list_sity[chat_id] = cities
                 return f"{index}, ваш ход."
+
             else:
                 count += 1
+
         if count >= length:
             return f"Я больше не знаю городов на букву {last_letter}. Ты победил!"
+
     else:            
         return f"Такой город уже был. Ты проиграл."
 
 
+# def calculator(string):
+#     string = string.replace(" ", "")
+#     try:
+
+#         if len(string.split("+")) == 2:
+#             parts = string.split("+")
+#             return sum(map(float, parts))
+
+#         if len(string.split('-')) == 2:
+#             parts = string.split("-")
+#             return float(parts[0]) - float(parts[-1])
+
+#         if len(string.split('*')) == 2:
+#             parts = string.split("*")
+#             return float(parts[0]) * float(parts[1])
+
+#         if len(string.split('/')) == 2:
+#             parts = string.split("/")
+#             return float(parts[0]) / float(parts[1])
+
+#     except ValueError:
+#         return "Вводи пожалуйста числа!"
+
+#     except ZeroDivisionError:
+#         return "На 0 делить нельзя!"
+
+
 def calculator(string):
-    string = string.replace(" ", "")
     try:
-        if len(string.split("+")) == 2:
-            parts = string.split("+")
-            return sum(map(float, parts))
+        string = string.replace(" ", "")
+        parts = string.split("+")
 
-        if len(string.split('-')) == 2:
-            parts = string.split("-")
-            return float(parts[0]) - float(parts[-1])
+        for index_part in range(len(parts)):
+            if "-" in parts[index_part]:
+                parts[index_part] = parts[index_part].split("-")
 
-        if len(string.split('*')) == 2:
-            parts = string.split("*")
-            return float(parts[0]) * float(parts[1])
+        for index_part in range(len(parts)):
+            parts[index_part] = precalc(parts[index_part])
+        return sum(parts)
 
-        if len(string.split('/')) == 2:
-            parts = string.split("/")
-            return float(parts[0]) / float(parts[1])
     except ValueError:
         return "Вводи пожалуйста числа!"
+
     except ZeroDivisionError:
         return "На 0 делить нельзя!"
+
+
+def precalc(part):
+    if type(part) is str:
+
+        if "*" in part:
+            parts = list(map(precalc, part.split("*")))
+            result = 1
+            for subpart in parts:
+                result *= subpart
+
+            return result
+
+        elif "/" in part:
+            parts = list(map(precalc, part.split("/")))
+            result = parts[0]
+
+            for subpart in parts[1:]:
+                result /= subpart
+
+            return result
+
+        else:
+            return float(part)
+
+    elif type(part) is list:
+
+        for index_part in range(len(part)):
+            part[index_part] = precalc(part[index_part])
+        
+        return part[0] - sum(part[1:])
+
+    return part
+
 
 def calc(update, context):
     user_text = update.message.text
     expression = str(user_text.replace("/calc ", ''))
+    # print(calculator("3/2 +(10-5+2) / 3*2.5- 4+1/2"))
     text = calculator(expression)
     update.message.reply_text(text)
 
